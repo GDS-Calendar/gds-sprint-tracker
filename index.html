@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GDS Closeout Sprint · May 12 – June 30</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap');
+  :root {
+    --bg: #f4f1eb; --surface: #faf8f4; --border: #ddd9cf; --text: #2a2820;
+    --muted: #8a8478; --fmpc: #a07830; --ai: #2e8f60; --reviews: #6655b8;
+    --construction: #c05030; --security: #2878b0; --hygiene: #507830;
+    --principles: #c09010; --accent: #1a1814;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; font-size: 15px; line-height: 1.6; padding: 40px 24px 80px; max-width: 860px; margin: 0 auto; }
+  header { border-bottom: 1px solid var(--border); padding-bottom: 28px; margin-bottom: 36px; }
+  .eyebrow { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  h1 { font-family: 'Fraunces', serif; font-weight: 300; font-size: 34px; line-height: 1.15; color: var(--accent); margin-bottom: 6px; }
+  .subtitle { color: var(--muted); font-size: 13px; }
+  .principles-bar { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--principles); padding: 14px 18px; margin-bottom: 28px; border-radius: 2px; }
+  .principles-bar .label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--principles); margin-bottom: 6px; }
+  .principles-bar ul { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 20px; }
+  .principles-bar li { font-size: 13px; }
+  .principles-bar li::before { content: '→ '; color: var(--principles); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 18px; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  .legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .progress-wrap { margin-bottom: 32px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+  .prog-count { color: var(--text); }
+  .progress-track { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--ai); border-radius: 2px; width: 0%; transition: width 0.3s ease; }
+  .week-block { margin-bottom: 28px; }
+  .week-header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .week-num { font-family: 'Fraunces', serif; font-style: italic; font-size: 24px; color: var(--muted); line-height: 1; }
+  .week-dates { font-size: 12px; color: var(--muted); }
+  .week-theme { font-size: 11px; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-left: auto; }
+  .tasks { display: flex; flex-direction: column; gap: 6px; }
+  .task { display: grid; grid-template-columns: 3px 1fr; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; overflow: hidden; cursor: pointer; transition: opacity 0.2s; user-select: none; }
+  .task:hover { border-color: #c4bfb5; }
+  .task-stripe { width: 3px; }
+  .task-body { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px 10px 10px; }
+  .task-check { flex-shrink: 0; width: 16px; height: 16px; border: 1.5px solid var(--border); border-radius: 3px; margin-top: 2px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; background: var(--bg); }
+  .task-check svg { display: none; width: 10px; height: 10px; }
+  .task-content { flex: 1; min-width: 0; }
+  .task-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; flex-wrap: wrap; }
+  .bucket-tag { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 1px 6px; border-radius: 2px; font-weight: 500; }
+  .task-date { font-size: 11px; color: var(--muted); }
+  .task-text { font-size: 14px; color: var(--text); line-height: 1.45; }
+  .task-sub { font-size: 12px; color: var(--muted); margin-top: 3px; display: flex; flex-direction: column; gap: 1px; }
+  .task-sub span::before { content: '↳ '; }
+  .task.done { opacity: 0.4; }
+  .task.done .task-text { text-decoration: line-through; color: var(--muted); }
+  .task.done .task-check { background: var(--text); border-color: var(--text); }
+  .task.done .task-check svg { display: block; }
+  .fmpc-s { background: var(--fmpc); } .fmpc-t { background: rgba(160,120,48,0.12); color: var(--fmpc); }
+  .ai-s { background: var(--ai); } .ai-t { background: rgba(46,143,96,0.12); color: var(--ai); }
+  .rev-s { background: var(--reviews); } .rev-t { background: rgba(102,85,184,0.12); color: var(--reviews); }
+  .con-s { background: var(--construction); } .con-t { background: rgba(192,80,48,0.12); color: var(--construction); }
+  .sec-s { background: var(--security); } .sec-t { background: rgba(40,120,176,0.12); color: var(--security); }
+  .hyg-s { background: var(--hygiene); } .hyg-t { background: rgba(80,120,48,0.12); color: var(--hygiene); }
+  .led-s { background: var(--principles); } .led-t { background: rgba(192,144,16,0.12); color: var(--principles); }
+  .ops-s { background: var(--principles); } .ops-t { background: rgba(192,144,16,0.12); color: var(--principles); }
+  .russell-note { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--fmpc); padding: 12px 16px; margin-top: 28px; border-radius: 2px; font-size: 13px; color: var(--muted); }
+  .russell-note strong { color: var(--fmpc); display: block; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 4px; }
+  .reset-btn { margin-top: 24px; display: block; background: none; border: 1px solid var(--border); color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 14px; cursor: pointer; border-radius: 2px; }
+  .reset-btn:hover { border-color: var(--muted); color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Georgetown Day School · Director of Operations & Innovation</div>
+  <h1>Six-Week<br>Closeout Sprint</h1>
+  <div class="subtitle">May 12 – June 30, 2026 &nbsp;·&nbsp; Five buckets + operating principles</div>
+</header>
+
+<div class="principles-bar">
+  <div class="label">Operating Principles — thread through everything</div>
+  <ul>
+    <li>Drive, don't just respond</li>
+    <li>Delegate; resist carrying it alone</li>
+    <li>Be physically visible on campus</li>
+    <li>Show up before Danielle & Tori knowing the game</li>
+  </ul>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--fmpc)"></div>FMPC / Board</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--ai)"></div>AI Guidebook</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--reviews)"></div>Perf Reviews</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--construction)"></div>Construction</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--security)"></div>Security RFP</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--hygiene)"></div>Budget</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--principles)"></div>Leadership / Ops</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-label"><span>Sprint Progress</span><span class="prog-count" id="prog-count">0 / 0 done</span></div>
+  <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+</div>
+
+<!-- WEEK 1 -->
+<div class="week-block">
+  <div class="week-header">
+    <div class="week-num">01</div>
+    <div class="week-dates">May 12–16</div>
+    <div class="week-theme">Get Moving · Initiate · Unblock</div>
+  </div>
+  <div class="tasks">
+
+    <div class="task" data-id="w1-ai1">
+      <div class="task-stripe ai-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag ai-t">AI Guidebook</span><span class="task-date">Mon–Tue May 12–13</span></div>
+          <div class="task-text">Debrief with Debby on May 11 in-service rollout</div>
+          <div class="task-sub"><span>Captured faculty/staff feedback</span><span>Sent Debby notes</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w1-led1">
+      <div class="task-stripe led-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag led-t">Leadership</span><span class="task-date">Fri May 16</span></div>
+          <div class="task-text">Schedule Services Team meeting for Week 2 — add 360 feedback share to agenda</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- WEEK 2 -->
+<div class="week-block">
+  <div class="week-header">
+    <div class="week-num">02</div>
+    <div class="week-dates">May 19–23</div>
+    <div class="week-theme">Show Up · Set Tone · Kick Off Reviews</div>
+  </div>
+  <div class="tasks">
+
+    <div class="task" data-id="w2-led1">
+      <div class="task-stripe led-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag led-t">Leadership</span><span class="task-date">Week of May 19</span></div>
+          <div class="task-text">Services Team meeting: share 360 results + announce new operating mode</div>
+          <div class="task-sub"><span>Explicitly delegate specific projects to specific people by name</span><span>Tell them you're driving more proactively going forward</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w2-rev1">
+      <div class="task-stripe rev-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag rev-t">Perf Reviews</span><span class="task-date">Tue May 20</span></div>
+          <div class="task-text">Dictate + draft reviews for Chris Oster + Shelley Harris</div>
+          <div class="task-sub"><span>Both done ✓</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w2-sec-notify">
+      <div class="task-stripe sec-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag sec-t">Security RFP</span><span class="task-date">Week of May 19</span></div>
+          <div class="task-text">Email all four security firms with new timeline</div>
+          <div class="task-sub"><span>Done ✓ — committee review July, firm selected August, on-site visit late Sept/Oct</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w2-ops1">
+      <div class="task-stripe ops-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag ops-t">Operations</span><span class="task-date">Week of May 19</span></div>
+          <div class="task-text">Close loop on space requests — partner with Lauren</div>
+          <div class="task-sub"><span>Done ✓ — all space notifications sent</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w2-france1">
+      <div class="task-stripe ops-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag ops-t">Operations</span><span class="task-date">Week of May 19</span></div>
+          <div class="task-text">Bus culture & safety — initial conversation with Chris France done</div>
+          <div class="task-sub"><span>France looped in ✓ — Oster conversation to follow in early summer</span><span>Full project moves to June/July; less urgent, more summer-paced</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- WEEK 3 -->
+<div class="week-block">
+  <div class="week-header">
+    <div class="week-num">03</div>
+    <div class="week-dates">May 26–30</div>
+    <div class="week-theme">Contract · Caleb · Reviews · Russell</div>
+  </div>
+  <div class="tasks">
+
+    <div class="task" data-id="w3-con0">
+      <div class="task-stripe con-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag con-t">Construction</span><span class="task-date">Tue May 27</span></div>
+          <div class="task-text">Summer reno contract back from counsel — review, sign, return immediately</div>
+          <div class="task-sub"><span>Rahel has counsel returning it Tuesday — turnaround fast, deadline imminent</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w3-fmpc0">
+      <div class="task-stripe fmpc-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag fmpc-t">FMPC / Board</span><span class="task-date">Tue May 27, 4pm</span></div>
+          <div class="task-text">Caleb call — prep in advance, dig in here Monday afternoon</div>
+          <div class="task-sub"><span>Key messages: PPRRSM waiting for Danielle; Rahel is aligned; 4800 Wisc lease offer (Master Ballet Academy) on radar</span><span>Push to get Litiveld hired for campus planning work; close out FMPC year strong</span><span>Tone: I'm driving this, I've got it, here's what's next</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w3-con1">
+      <div class="task-stripe con-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag con-t">Construction</span><span class="task-date">Wed May 28+</span></div>
+          <div class="task-text">Initiate pre-construction coordination — first meeting with contractors + Chris Oster</div>
+          <div class="task-sub"><span>Can only happen after contract is signed Tuesday</span><span>Delegate day-to-day tracking to Chris</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w3-ai1">
+      <div class="task-stripe ai-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag ai-t">AI Guidebook</span><span class="task-date">Tue–Wed May 27–28</span></div>
+          <div class="task-text">Get meeting on books with Debby — close out AI work for the year</div>
+          <div class="task-sub"><span>Discuss v1.2 edits, end-of-year follow-up session with faculty, summer roadmap</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w3-rev1">
+      <div class="task-stripe rev-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag rev-t">Perf Reviews</span><span class="task-date">May 27–29</span></div>
+          <div class="task-text">Dictate reviews for Natalie Markley + Walid Nazari</div>
+          <div class="task-sub"><span>Natalie: acknowledge her proactive involvement in planning her own leave coverage — rare and appreciated</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w3-natalie1">
+      <div class="task-stripe ops-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag ops-t">Operations</span><span class="task-date">Week of May 26</span></div>
+          <div class="task-text">Natalie leave coverage — confirm all handoff pieces are in place</div>
+          <div class="task-sub"><span>Summer camp: Yenny leads, you + Danielle B + Malik support on hard calls</span><span>Fall rentals (PPA, TIC): Chris Oster steps in, Yenny supports on operations</span><span>Talk to Oster about fall rentals role — sequence after the construction contract conversation</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w3-led1">
+      <div class="task-stripe led-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag led-t">Leadership</span><span class="task-date">Thu May 28, 7pm</span></div>
+          <div class="task-text">Dinner with Russell — career debrief</div>
+          <div class="task-sub"><span>Light prep Thu afternoon: 3 questions to have in your head going in</span><span>How do you see me? What should my next 3 years look like? What does driving vs. responding look like at GDS specifically?</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- WEEK 4 -->
+<div class="week-block">
+  <div class="week-header">
+    <div class="week-num">04</div>
+    <div class="week-dates">June 2–6</div>
+    <div class="week-theme">Finish Reviews · Construction Lock · Send Reviews</div>
+  </div>
+  <div class="tasks">
+
+    <div class="task" data-id="w4-rev1">
+      <div class="task-stripe rev-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag rev-t">Perf Reviews</span><span class="task-date">June 2–4</span></div>
+          <div class="task-text">Dictate final 2 reviews — Khalid Daniels + Chris France</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w4-rev2">
+      <div class="task-stripe rev-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag rev-t">Perf Reviews</span><span class="task-date">June 5–6</span></div>
+          <div class="task-text">Send all six written reviews — schedule 1:1 conversations</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w4-con1">
+      <div class="task-stripe con-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag con-t">Construction</span><span class="task-date">June 3–4</span></div>
+          <div class="task-text">First pre-construction coordination meeting — contractors + Chris Oster</div>
+          <div class="task-sub"><span>Formal handoff to Chris for daily management</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- WEEK 5 -->
+<div class="week-block">
+  <div class="week-header">
+    <div class="week-num">05</div>
+    <div class="week-dates">June 9–13</div>
+    <div class="week-theme">Review Conversations · AI Roadmap · Budget</div>
+  </div>
+  <div class="tasks">
+
+    <div class="task" data-id="w5-rev1">
+      <div class="task-stripe rev-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag rev-t">Perf Reviews</span><span class="task-date">June 9–13</span></div>
+          <div class="task-text">Hold 1:1 review conversations with all six team members</div>
+          <div class="task-sub"><span>Use each conversation to name what you're delegating to them going forward</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w5-ai1">
+      <div class="task-stripe ai-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag ai-t">AI Guidebook</span><span class="task-date">June 11–12</span></div>
+          <div class="task-text">AI year-end session with Debby — v1.2 + summer roadmap for student AI focus 2026-27</div>
+          <div class="task-sub"><span>Scope summer teacher guidebook expansion alongside student AI planning</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w5-hyg1">
+      <div class="task-stripe hyg-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag hyg-t">Budget</span><span class="task-date">June 12–13</span></div>
+          <div class="task-text">Operating budget closeout — confirm full-year actuals vs. plan</div>
+          <div class="task-sub"><span>Brief Rahel with clean summary</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w5-sec1">
+      <div class="task-stripe sec-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag sec-t">Security RFP</span><span class="task-date">July</span></div>
+          <div class="task-text">Selection committee convenes to review four proposals</div>
+          <div class="task-sub"><span>Attendees: Lauren, Rahel, Russell, new CFO</span><span>Firm selected by August · On-site visit late Sept/Oct</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- WEEK 6 -->
+<div class="week-block">
+  <div class="week-header">
+    <div class="week-num">06</div>
+    <div class="week-dates">June 16–30</div>
+    <div class="week-theme">Wrap · Land the Plane · Set Up Summer</div>
+  </div>
+  <div class="tasks">
+
+    <div class="task" data-id="w6-fmpc1">
+      <div class="task-stripe fmpc-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag fmpc-t">FMPC / Board</span><span class="task-date">June 16–20</span></div>
+          <div class="task-text">PPRRSM + financial guiding principles on hold — pick back up with Danielle in July</div>
+          <div class="task-sub"><span>Rahel aligned, Caleb to be aligned — Danielle gets skin in the game on both</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w6-ai1">
+      <div class="task-stripe ai-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag ai-t">AI Guidebook</span><span class="task-date">June 19–20</span></div>
+          <div class="task-text">Summer AI roadmap finalized — student focus locked, teacher guidebook scoped</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w6-con1">
+      <div class="task-stripe con-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag con-t">Construction</span><span class="task-date">June 23–27</span></div>
+          <div class="task-text">Summer construction underway — weekly check-in cadence with Chris established</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="task" data-id="w6-led2">
+      <div class="task-stripe led-s"></div>
+      <div class="task-body">
+        <div class="task-check"><svg viewBox="0 0 10 10" fill="none"><polyline points="1,5 4,8 9,2" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="task-content">
+          <div class="task-meta"><span class="bucket-tag led-t">Leadership</span><span class="task-date">June 30</span></div>
+          <div class="task-text">Year-end: take stock of what moved, what you drove, how you showed up</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="russell-note">
+  <strong>Russell dinner — Thu May 28, 7pm</strong>
+  Light prep Thu afternoon. Three questions: How do you see me? What should my next 3 years look like? What does driving vs. responding look like at GDS specifically? Two bros having a beer — keep it easy.
+</div>
+
+<button class="reset-btn" onclick="resetAll()">Reset all checkboxes</button>
+
+<script>
+  const STORAGE_KEY = 'gds_sprint_2026_v1';
+  function save() {
+    const state = {};
+    document.querySelectorAll('.task').forEach(t => { state[t.dataset.id] = t.classList.contains('done'); });
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  }
+  function load() {
+    try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : {}; } catch(e) { return {}; }
+  }
+  function updateProgress() {
+    const all = document.querySelectorAll('.task');
+    const done = document.querySelectorAll('.task.done');
+    const pct = all.length ? (done.length / all.length) * 100 : 0;
+    document.getElementById('prog-fill').style.width = pct + '%';
+    document.getElementById('prog-count').textContent = done.length + ' / ' + all.length + ' done';
+  }
+  function resetAll() {
+    if (!confirm('Reset all checkboxes?')) return;
+    document.querySelectorAll('.task').forEach(t => t.classList.remove('done'));
+    try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+    updateProgress();
+  }
+  const state = load();
+  document.querySelectorAll('.task').forEach(task => {
+    if (state[task.dataset.id]) task.classList.add('done');
+    task.addEventListener('click', () => { task.classList.toggle('done'); save(); updateProgress(); });
+  });
+  updateProgress();
+</script>
+</body>
+</html>
